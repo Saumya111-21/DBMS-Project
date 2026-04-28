@@ -259,3 +259,92 @@ HAVING COUNT(e.Student_ID) >= 2
 ORDER BY Active_Students DESC;
 
 
+
+USE elearningplatform;
+SELECT 
+    s.Name AS Student_Name,
+    s.Student_ID AS Roll_Number,
+    c.Title AS Course,
+    a.Title AS Assignment
+FROM 
+    Student s
+    JOIN Enrollment e ON s.Student_ID = e.Student_ID
+    JOIN Course c ON e.Course_ID = c.Course_ID
+    JOIN Assignment a ON c.Course_ID = a.Course_ID
+WHERE 
+    s.Student_ID = 1;  
+SELECT s.NAME AS STUDENT_NAME,
+c.TITLE AS COURSE FROM STUDENT s 
+JOIN ENROLLMENT e ON s.STUDENT_ID = e.STUDENT_ID
+JOIN COURSE c ON e.COURSE_ID=c.COURSE_ID;
+
+USE elearningplatform;
+
+-- mour database is already mostly normalized 
+-- It is very close to 3NF (Third Normal Form) because:
+-- No repeating groups 
+-- No partial dependency 
+-- No transitive dependency 
+
+CREATE TABLE IF NOT EXISTS Status (
+    Status_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Status_Name VARCHAR(50) UNIQUE
+);
+
+INSERT IGNORE INTO Status (Status_Name) VALUES
+('Active'), ('Completed'), ('Dropped'), ('Pending');
+
+ALTER TABLE Course MODIFY Faculty_ID INT NULL;
+ALTER TABLE Assignment 
+ADD COLUMN Status_ID INT;
+
+ALTER TABLE Enrollment ADD COLUMN Status_ID INT;
+ALTER TABLE Enrollment ADD COLUMN Grade_ID INT;
+SET SQL_SAFE_UPDATES = 0;
+UPDATE Assignment a
+JOIN Status s ON a.Status = s.Status_Name
+SET a.Status_ID = s.Status_ID;
+
+-- Enrollment → Status_ID
+UPDATE Enrollment e
+JOIN Status s ON e.Status = s.Status_Name
+SET e.Status_ID = s.Status_ID;
+
+-- Enrollment → Grade_ID
+UPDATE Enrollment e
+JOIN Grade g ON e.Grade = g.Grade_Name
+SET e.Grade_ID = g.Grade_ID;
+
+ALTER TABLE Assignment 
+ADD CONSTRAINT fk_assignment_status 
+FOREIGN KEY (Status_ID) REFERENCES Status(Status_ID);
+
+ALTER TABLE Enrollment 
+ADD CONSTRAINT fk_enrollment_status 
+FOREIGN KEY (Status_ID) REFERENCES Status(Status_ID),
+ADD CONSTRAINT fk_enrollment_grade 
+FOREIGN KEY (Grade_ID) REFERENCES Grade(Grade_ID);
+ALTER TABLE Assignment DROP COLUMN Status;
+ALTER TABLE Enrollment DROP COLUMN Status;
+ALTER TABLE Enrollment DROP COLUMN Grade;
+ALTER TABLE Course ADD COLUMN Duration_Months INT;
+
+UPDATE Course 
+SET Duration_Months = 
+    CASE 
+        WHEN Duration = '2 months' THEN 2
+        WHEN Duration = '3 months' THEN 3
+        WHEN Duration = '4 months' THEN 4
+    END;
+
+ALTER TABLE Course DROP COLUMN Duration;
+
+-- My database is now:
+-- Fully normalized (3NF)
+-- No redundancy
+-- No update anomalies
+-- Proper foreign key design
+
+
+
+
