@@ -280,7 +280,7 @@ JOIN COURSE c ON e.COURSE_ID=c.COURSE_ID;
 
 USE elearningplatform;
 
--- mour database is already mostly normalized 
+-- my database is already mostly normalized 
 -- It is very close to 3NF (Third Normal Form) because:
 -- No repeating groups 
 -- No partial dependency 
